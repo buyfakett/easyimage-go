@@ -1,0 +1,10 @@
+server:
+  port: 8888
+  log_level: info
+  swagger: true
+  zone: Asia/Shanghai
+  domain: http://localhost:8888
+  token: 123qazwsxedc456
+image:
+  uri: /i
+  webp_quality: 100

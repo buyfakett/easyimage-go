@@ -1,0 +1,261 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {
+            "name": "buyfakett",
+            "url": "https://github.com/buyfakett"
+        }
+    },
+    "paths": {
+        "/api/image/delete": {
+            "delete": {
+                "description": "删除相对图片目录下的文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "图片"
+                ],
+                "summary": "删除文件",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件路径",
+                        "name": "path",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.CommonResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/image/list": {
+            "get": {
+                "description": "获取指定目录下的文件与子目录（不递归）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "图片"
+                ],
+                "summary": "获取文件列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "相对 图片 的目录，不传表示根目录",
+                        "name": "dir",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/image.ListFilesResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/image/upload": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "上传图片",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "图片"
+                ],
+                "summary": "上传图片",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "图片文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/image.UploadResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metrics": {
+            "get": {
+                "tags": [
+                    "监控"
+                ],
+                "summary": "普罗米修斯监控",
+                "responses": {}
+            }
+        },
+        "/api/ping": {
+            "get": {
+                "description": "测试网络接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "测试"
+                ],
+                "summary": "测试网络接口",
+                "responses": {}
+            }
+        },
+        "/api/server_info": {
+            "get": {
+                "description": "服务信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "测试"
+                ],
+                "summary": "服务信息",
+                "responses": {}
+            }
+        },
+        "/api/test_token": {
+            "get": {
+                "description": "测试token权限",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "测试"
+                ],
+                "summary": "测试token权限",
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "image.FileItem": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "文件或目录名",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "相对路径",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "file | dir",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "文件访问 URL，仅 file 有",
+                    "type": "string"
+                }
+            }
+        },
+        "image.ListFilesResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/response.Code"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/image.FileItem"
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "image.UploadResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/response.Code"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Code": {
+            "type": "integer",
+            "enum": [
+                0,
+                200,
+                401,
+                500,
+                501,
+                502,
+                503
+            ],
+            "x-enum-varnames": [
+                "Code_Common",
+                "Code_Success",
+                "Code_Unauthorized",
+                "Code_Err",
+                "Code_DBErr",
+                "Code_PasswordErr",
+                "Code_AlreadyExists"
+            ]
+        },
+        "response.CommonResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/response.Code"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "authorization",
+            "in": "header"
+        }
+    }
+}
