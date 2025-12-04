@@ -1,6 +1,6 @@
 module easyimage_go
 
-go 1.25.4
+go 1.25.5
 
 require (
 	github.com/chai2010/webp v1.4.0
