@@ -36,6 +36,7 @@ server:
   port: 8080                    # 服务端口
   domain: http://localhost:8080 # 服务域名(用于拼接图片url)
   token: 123456                 # 鉴权token(用于鉴权)
+  captcha_expire_time: 5        # 验证码过期时间(单位:分钟)
 image:
   uri: /i                       # 图片存储路径(相对路径)
   webp_quality: 100             # webp压缩质量(0-100)
