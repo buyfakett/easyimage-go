@@ -5,6 +5,7 @@ server:
   zone: Asia/Shanghai
   domain: http://localhost:8888
   token: 123qazwsxedc456
+  captcha_expire_time: 5
 image:
   uri: /i
   webp_quality: 100

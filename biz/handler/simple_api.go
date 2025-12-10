@@ -38,17 +38,3 @@ func ServerInfo(c *gin.Context) {
 		},
 	})
 }
-
-// TestToken 测试token权限
-// @Tags 测试
-// @Summary 测试token权限
-// @Description 测试token权限
-// @Accept application/json
-// @Produce application/json
-// @Router /api/test_token [get]
-func TestToken(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"msg":  "权限验证成功",
-	})
-}

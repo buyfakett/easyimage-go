@@ -11,15 +11,16 @@ import (
 )
 
 type ServerConfig struct {
-	Port          int    `mapstructure:"port"`
-	Name          string `mapstructure:"name"`
-	Version       string `mapstructure:"version"`
-	Author        string `mapstructure:"author"`
-	LogLevel      string `mapstructure:"log_level"`
-	EnableSwagger bool   `mapstructure:"swagger"`
-	Zone          string `mapstructure:"zone"`
-	Domain        string `mapstructure:"domain"`
-	Token         string `mapstructure:"token"`
+	Port              int    `mapstructure:"port"`
+	Name              string `mapstructure:"name"`
+	Version           string `mapstructure:"version"`
+	Author            string `mapstructure:"author"`
+	LogLevel          string `mapstructure:"log_level"`
+	EnableSwagger     bool   `mapstructure:"swagger"`
+	Zone              string `mapstructure:"zone"`
+	Domain            string `mapstructure:"domain"`
+	Token             string `mapstructure:"token"`
+	CaptchaExpireTime int    `mapstructure:"captcha_expire_time"`
 }
 
 type ImageConfig struct {

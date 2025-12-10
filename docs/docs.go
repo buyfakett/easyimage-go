@@ -159,8 +159,28 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/test_token": {
+        "/api/user/captcha": {
             "get": {
+                "description": "生成登录验证码",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "生成验证码",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.CaptchaResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/test_token": {
+            "post": {
                 "description": "测试token权限",
                 "consumes": [
                     "application/json"
@@ -172,7 +192,25 @@ const docTemplate = `{
                     "测试"
                 ],
                 "summary": "测试token权限",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "测试token权限",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.TestTokenReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.CommonResp"
+                        }
+                    }
+                }
             }
         }
     },
@@ -232,22 +270,16 @@ const docTemplate = `{
         "response.Code": {
             "type": "integer",
             "enum": [
-                0,
                 200,
                 401,
                 500,
-                501,
-                502,
-                503
+                504
             ],
             "x-enum-varnames": [
-                "Code_Common",
                 "Code_Success",
                 "Code_Unauthorized",
                 "Code_Err",
-                "Code_DBErr",
-                "Code_PasswordErr",
-                "Code_AlreadyExists"
+                "Code_CaptchaErr"
             ]
         },
         "response.CommonResp": {
@@ -258,6 +290,56 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "user.CaptchaData": {
+            "type": "object",
+            "properties": {
+                "base64_image": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.CaptchaResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/response.Code"
+                },
+                "data": {
+                    "$ref": "#/definitions/user.CaptchaData"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.TestTokenReq": {
+            "type": "object",
+            "required": [
+                "captcha",
+                "captcha_id",
+                "token"
+            ],
+            "properties": {
+                "captcha": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 1
+                },
+                "captcha_id": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "token": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 }
             }
         }

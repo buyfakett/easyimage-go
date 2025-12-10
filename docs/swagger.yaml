@@ -36,28 +36,57 @@ definitions:
     type: object
   response.Code:
     enum:
-    - 0
     - 200
     - 401
     - 500
-    - 501
-    - 502
-    - 503
+    - 504
     type: integer
     x-enum-varnames:
-    - Code_Common
     - Code_Success
     - Code_Unauthorized
     - Code_Err
-    - Code_DBErr
-    - Code_PasswordErr
-    - Code_AlreadyExists
+    - Code_CaptchaErr
   response.CommonResp:
     properties:
       code:
         $ref: '#/definitions/response.Code'
       msg:
         type: string
+    type: object
+  user.CaptchaData:
+    properties:
+      base64_image:
+        type: string
+      id:
+        type: string
+    type: object
+  user.CaptchaResp:
+    properties:
+      code:
+        $ref: '#/definitions/response.Code'
+      data:
+        $ref: '#/definitions/user.CaptchaData'
+      msg:
+        type: string
+    type: object
+  user.TestTokenReq:
+    properties:
+      captcha:
+        maxLength: 10
+        minLength: 1
+        type: string
+      captcha_id:
+        maxLength: 255
+        minLength: 1
+        type: string
+      token:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - captcha
+    - captcha_id
+    - token
     type: object
 info:
   contact:
@@ -156,14 +185,38 @@ paths:
       summary: 服务信息
       tags:
       - 测试
-  /api/test_token:
+  /api/user/captcha:
     get:
+      description: 生成登录验证码
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.CaptchaResp'
+      summary: 生成验证码
+      tags:
+      - 用户
+  /api/user/test_token:
+    post:
       consumes:
       - application/json
       description: 测试token权限
+      parameters:
+      - description: 测试token权限
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/user.TestTokenReq'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CommonResp'
       summary: 测试token权限
       tags:
       - 测试
