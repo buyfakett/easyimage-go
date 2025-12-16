@@ -4,6 +4,7 @@ import (
 	"easyimage_go/biz/mw"
 	genrouter "easyimage_go/biz/router"
 	"easyimage_go/docs"
+	"easyimage_go/internal/version"
 	"easyimage_go/utils/config"
 	"easyimage_go/utils/logger"
 	"embed"
@@ -44,7 +45,7 @@ func main() {
 	// 注册路由
 	genrouter.RegisterRoutes(r)
 
-	docs.SwaggerInfo.Version = config.Cfg.Server.Version
+	docs.SwaggerInfo.Version = version.Version
 	docs.SwaggerInfo.Title = config.Cfg.Server.Name
 	docs.SwaggerInfo.Description = fmt.Sprintf("%s by [%s](https://github.com/%s).",
 		config.Cfg.Server.Name, config.Cfg.Server.Author, config.Cfg.Server.Author)

@@ -14,6 +14,10 @@
 
 ## 快速启动
 
+注: 所有配置的优先级是命令行>环境变量>指定配置文件>默认配置文件
+
+环境变量需要在变量前面加上`EASYIMAGE_GO`,例如端口为`EASYIMAGE_GO_SERVER_PORT`
+
 ### Docker compose
 
 ```yaml

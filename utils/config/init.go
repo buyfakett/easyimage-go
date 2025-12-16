@@ -13,7 +13,6 @@ import (
 type ServerConfig struct {
 	Port              int    `mapstructure:"port"`
 	Name              string `mapstructure:"name"`
-	Version           string `mapstructure:"version"`
 	Author            string `mapstructure:"author"`
 	LogLevel          string `mapstructure:"log_level"`
 	EnableSwagger     bool   `mapstructure:"swagger"`
@@ -38,9 +37,14 @@ var Cfg AppConfig
 func InitConfig(defaultConfigContent []byte) {
 	// 1. 处理命令行参数
 	var configFile string
-	pflag.StringVar(&configFile, "config", "", "Path to custom config file")
-	pflag.IntVar(&Cfg.Server.Port, "server.port", 8888, "Server port")
+	pflag.StringVarP(&configFile, "config", "c", "", "配置文件")
+	pflag.IntVarP(&Cfg.Server.Port, "port", "p", 8888, "服务端口")
 	pflag.Parse()
+
+	if pflag.Lookup("help") != nil && pflag.Lookup("help").Value.String() == "true" {
+		pflag.PrintDefaults()
+		os.Exit(0)
+	}
 
 	v := viper.New()
 
@@ -66,7 +70,7 @@ func InitConfig(defaultConfigContent []byte) {
 		}
 	}
 
-	// 4. 环境变量覆盖（支持 HERTZ_SERVER_PORT 这类变量）
+	// 4. 环境变量覆盖
 	v.SetEnvPrefix("EASYIMAGE_GO")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
@@ -82,6 +86,5 @@ func InitConfig(defaultConfigContent []byte) {
 
 	// 7. 设置默认值
 	Cfg.Server.Name = ServerName
-	Cfg.Server.Version = Version
 	Cfg.Server.Author = Author
 }

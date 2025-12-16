@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"easyimage_go/internal/version"
 	"easyimage_go/utils/config"
 	"net/http"
 
@@ -34,7 +35,7 @@ func ServerInfo(c *gin.Context) {
 		"msg":  "获取成功",
 		"data": gin.H{
 			"name":    config.Cfg.Server.Name,
-			"version": config.Cfg.Server.Version,
+			"version": version.Version,
 		},
 	})
 }
