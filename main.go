@@ -1,15 +1,18 @@
 package main
 
 import (
+	"easyimage_go/biz/handler/image"
 	"easyimage_go/biz/mw"
 	genrouter "easyimage_go/biz/router"
 	"easyimage_go/docs"
-	"easyimage_go/internal/version"
 	"easyimage_go/utils/config"
 	"easyimage_go/utils/logger"
 	"embed"
 	_ "embed"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gookit/slog"
@@ -25,14 +28,88 @@ var defaultConfigContent []byte
 //go:embed static/*
 var staticFS embed.FS
 
-// @contact.name buyfakett
-// @contact.url https://github.com/buyfakett
+//go:embed internal/version/version.txt
+var version string
+
+//	@contact.name	buyfakett
+//	@contact.url	https://github.com/buyfakett
 
 // @securityDefinitions.apikey	ApiKeyAuth
-// @in	header
-// @name authorization
+// @in							header
+// @name						authorization
+// 读取图片数据（支持本地文件和远程URL）
+func readImageData(path string) ([]byte, string, error) {
+	// 判断是远程URL还是本地文件
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		// 远程URL
+		resp, err := http.Get(path)
+		if err != nil {
+			return nil, "", fmt.Errorf("无法下载远程图片: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, "", fmt.Errorf("远程图片下载失败，状态码: %d", resp.StatusCode)
+		}
+
+		// 读取响应体
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, "", fmt.Errorf("读取远程图片失败: %w", err)
+		}
+
+		// 从URL中提取文件名
+		urlParts := strings.Split(path, "/")
+		filename := urlParts[len(urlParts)-1]
+		return data, filename, nil
+	} else {
+		// 本地文件
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return nil, "", fmt.Errorf("本地文件不存在: %s", path)
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, "", fmt.Errorf("读取本地文件失败: %w", err)
+		}
+
+		filename := path
+		return data, filename, nil
+	}
+}
+
 func main() {
 	config.InitConfig(defaultConfigContent)
+	// 如果显示版本信息，直接退出
+	if config.CliCfg.ShowVersion {
+		config.ShowVersionAndExit(version)
+	}
+
+	// 检查是否提供了图片路径（命令行模式）
+	if config.CliCfg.ImagePath != "" {
+		// 命令行模式：处理图片并退出
+		fmt.Printf("正在处理图片: %s\n", config.CliCfg.ImagePath)
+
+		// 读取图片数据
+		data, filename, err := readImageData(config.CliCfg.ImagePath)
+		if err != nil {
+			fmt.Printf("错误: %v\n", err)
+			os.Exit(1)
+		}
+
+		// 处理图片
+		url, err := image.ProcessImage(data, filename)
+		if err != nil {
+			fmt.Printf("图片处理失败: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("图片处理成功！\n")
+		fmt.Printf("访问URL: %s\n", url)
+		return
+	}
+
+	// 服务模式：启动Web服务器
 	logger.InitLog(config.Cfg.Server.LogLevel)
 	if config.Cfg.Server.LogLevel != "debug" {
 		gin.SetMode(gin.ReleaseMode)
@@ -45,7 +122,7 @@ func main() {
 	// 注册路由
 	genrouter.RegisterRoutes(r)
 
-	docs.SwaggerInfo.Version = version.Version
+	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Title = config.Cfg.Server.Name
 	docs.SwaggerInfo.Description = fmt.Sprintf("%s by [%s](https://github.com/%s).",
 		config.Cfg.Server.Name, config.Cfg.Server.Author, config.Cfg.Server.Author)

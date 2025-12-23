@@ -36,14 +36,11 @@ var Cfg AppConfig
 
 func InitConfig(defaultConfigContent []byte) {
 	// 1. 处理命令行参数
-	var configFile string
-	pflag.StringVarP(&configFile, "config", "c", "", "配置文件")
-	pflag.IntVarP(&Cfg.Server.Port, "port", "p", 8888, "服务端口")
-	pflag.Parse()
+	ParseCLI()
 
-	if pflag.Lookup("help") != nil && pflag.Lookup("help").Value.String() == "true" {
-		pflag.PrintDefaults()
-		os.Exit(0)
+	// 如果显示版本信息，直接退出
+	if CliCfg.ShowVersion {
+		return
 	}
 
 	v := viper.New()
@@ -58,15 +55,15 @@ func InitConfig(defaultConfigContent []byte) {
 	}
 
 	// 3. 加载外部配置文件（如果存在）
-	if configFile != "" {
-		if _, err := os.Stat(configFile); err == nil {
-			v.SetConfigFile(configFile)
+	if CliCfg.ConfigFile != "" {
+		if _, err := os.Stat(CliCfg.ConfigFile); err == nil {
+			v.SetConfigFile(CliCfg.ConfigFile)
 			if err := v.MergeInConfig(); err != nil {
-				fmt.Printf("加载外部配置失败: %v (路径: %s)\n", err, configFile)
+				fmt.Printf("加载外部配置失败: %v (路径: %s)\n", err, CliCfg.ConfigFile)
 				os.Exit(1)
 			}
 		} else {
-			fmt.Printf("警告: 外部配置文件不存在，使用默认配置 (路径: %s)\n", configFile)
+			fmt.Printf("警告: 外部配置文件不存在，使用默认配置 (路径: %s)\n", CliCfg.ConfigFile)
 		}
 	}
 
@@ -78,13 +75,13 @@ func InitConfig(defaultConfigContent []byte) {
 	// 5. 合并命令行参数
 	_ = v.BindPFlags(pflag.CommandLine)
 
-	// 6. 映射到结构体
+	// 7. 映射到结构体
 	if err := v.Unmarshal(&Cfg); err != nil {
 		fmt.Println("解析配置失败:", err)
 		os.Exit(1)
 	}
 
-	// 7. 设置默认值
+	// 8. 设置默认值
 	Cfg.Server.Name = ServerName
 	Cfg.Server.Author = Author
 }

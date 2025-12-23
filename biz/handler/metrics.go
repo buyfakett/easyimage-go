@@ -66,9 +66,10 @@ func updateMetrics() {
 }
 
 // Metrics gin 版本
-// @Tags 监控
-// @Summary 普罗米修斯监控
-// @Router /api/metrics [get]
+//
+//	@Tags		监控
+//	@Summary	普罗米修斯监控
+//	@Router		/api/metrics [get]
 func Metrics(c *gin.Context) {
 	updateMetrics()
 	promhttp.Handler().ServeHTTP(c.Writer, c.Request)

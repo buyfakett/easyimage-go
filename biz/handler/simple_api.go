@@ -9,12 +9,13 @@ import (
 )
 
 // Ping 测试网络接口
-// @Tags 测试
-// @Summary 测试网络接口
-// @Description 测试网络接口
-// @Accept application/json
-// @Produce application/json
-// @Router /api/ping [get]
+//
+//	@Tags			测试
+//	@Summary		测试网络接口
+//	@Description	测试网络接口
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Router			/api/ping [get]
 func Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
@@ -23,12 +24,13 @@ func Ping(c *gin.Context) {
 }
 
 // ServerInfo 服务信息
-// @Tags 测试
-// @Summary 服务信息
-// @Description 服务信息
-// @Accept application/json
-// @Produce application/json
-// @Router /api/server_info [get]
+//
+//	@Tags			测试
+//	@Summary		服务信息
+//	@Description	服务信息
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Router			/api/server_info [get]
 func ServerInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,

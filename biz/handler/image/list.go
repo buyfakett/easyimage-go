@@ -29,14 +29,15 @@ type ListFilesResp struct {
 }
 
 // ListFiles 获取文件/目录列表
-// @Tags 图片
-// @Summary 获取文件列表
-// @Description 获取指定目录下的文件与子目录（不递归）
-// @Accept application/json
-// @Produce application/json
-// @Param dir query string false "相对 图片 的目录，不传表示根目录"
-// @Success 200 {object} ListFilesResp
-// @Router /api/image/list [get]
+//
+//	@Tags			图片
+//	@Summary		获取文件列表
+//	@Description	获取指定目录下的文件与子目录（不递归）
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			dir	query		string	false	"相对 图片 的目录，不传表示根目录"
+//	@Success		200	{object}	ListFilesResp
+//	@Router			/api/image/list [get]
 func ListFiles(c *gin.Context) {
 	var req ListFilesReq
 	if err := c.ShouldBindQuery(&req); err != nil {

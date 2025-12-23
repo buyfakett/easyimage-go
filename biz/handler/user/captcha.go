@@ -14,9 +14,9 @@ import (
 var captchaDriver = base64Captcha.NewDriverDigit(
 	60,  // 高度
 	240, // 宽度
-	4,   // 长度
+	6,   // 长度
 	0.7, // 最大倾斜度
-	80,  // 点数
+	100, // 点数
 )
 
 // 验证码存储 - 设置5分钟过期
@@ -36,12 +36,13 @@ type CaptchaData struct {
 }
 
 // GenerateCaptcha 生成验证码
-// @Tags 用户
-// @Summary 生成验证码
-// @Description 生成登录验证码
-// @Produce application/json
-// @Success 200 {object} CaptchaResp
-// @router /api/user/captcha [GET]
+//
+//	@Tags			用户
+//	@Summary		生成验证码
+//	@Description	生成登录验证码
+//	@Produce		application/json
+//	@Success		200	{object}	CaptchaResp
+//	@router			/api/user/captcha [GET]
 func GenerateCaptcha(c *gin.Context) {
 	// 创建验证码
 	captcha := base64Captcha.NewCaptcha(captchaDriver, captchaStore)

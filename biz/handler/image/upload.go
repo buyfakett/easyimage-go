@@ -5,6 +5,7 @@ import (
 	"easyimage_go/biz/response"
 	"easyimage_go/utils"
 	"easyimage_go/utils/config"
+	"fmt"
 	"image"
 	"io"
 	"mime/multipart"
@@ -25,40 +26,19 @@ type UploadResp struct {
 	Url string `json:"url"`
 }
 
-// UploadImage 上传图片
-// @Tags 图片
-// @Summary 上传图片
-// @Description 上传图片
-// @Accept multipart/form-data
-// @Produce multipart/form-data
-// @Param file formData file true "图片文件"
-// @Success 200 {object} UploadResp
-// @Security ApiKeyAuth
-// @router /api/image/upload [PUT]
-func UploadImage(c *gin.Context) {
-	req := new(UploadReq)
-	if err := c.ShouldBind(req); err != nil {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	}
-	resp := new(UploadResp)
-
-	// 验证文件类型
-	fileHeader, err := req.File.Open()
-	if err != nil {
-		c.String(http.StatusBadRequest, "打开文件失败: "+err.Error())
-		return
-	}
-	defer fileHeader.Close()
-
+// ProcessImage 处理图片（转换格式和存储）
+// 参数：
+//
+//	fileData: 图片文件数据
+//	filename: 原始文件名
+//
+// 返回：
+//
+//	存储后的文件URL
+//	错误信息
+func ProcessImage(fileData []byte, filename string) (string, error) {
 	// 检测文件类型
-	buffer := make([]byte, 512)
-	if _, err := fileHeader.Read(buffer); err != nil {
-		c.String(http.StatusBadRequest, "读取文件失败: "+err.Error())
-		return
-	}
-
-	contentType := http.DetectContentType(buffer)
+	contentType := http.DetectContentType(fileData)
 	allowedTypes := map[string]bool{
 		"image/jpeg": true,
 		"image/jpg":  true,
@@ -67,14 +47,8 @@ func UploadImage(c *gin.Context) {
 		"image/webp": true,
 	}
 
-	// 重置文件指针
-	if _, err := fileHeader.Seek(0, 0); err != nil {
-		c.String(http.StatusInternalServerError, "文件处理失败: "+err.Error())
-		return
-	}
-
 	// 初始化文件扩展名
-	ext := filepath.Ext(req.File.Filename)
+	ext := filepath.Ext(filename)
 
 	// 检查是否为HEIC格式
 	isHEIC := false
@@ -83,13 +57,6 @@ func UploadImage(c *gin.Context) {
 		if ext == ".heic" || ext == ".HEIC" {
 			isHEIC = true
 		}
-	}
-
-	// 读取文件内容用于可能的HEIC转换
-	fileData, err := io.ReadAll(fileHeader)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "读取文件失败: "+err.Error())
-		return
 	}
 
 	// 检查文件签名是否为HEIC
@@ -105,8 +72,7 @@ func UploadImage(c *gin.Context) {
 	if isHEIC {
 		jpegData, convertErr := utils.ConvertHEICtoJPEG(fileData)
 		if convertErr != nil {
-			c.String(http.StatusBadRequest, "HEIC格式转换失败，请转换为JPEG或PNG格式后再上传: "+convertErr.Error())
-			return
+			return "", convertErr
 		}
 
 		// 更新文件数据和扩展名
@@ -116,8 +82,7 @@ func UploadImage(c *gin.Context) {
 	}
 
 	if !allowedTypes[contentType] {
-		c.String(http.StatusBadRequest, "不支持的文件类型: "+contentType)
-		return
+		return "", fmt.Errorf("不支持的文件类型: %s", contentType)
 	}
 
 	// 获取文件扩展名
@@ -133,15 +98,13 @@ func UploadImage(c *gin.Context) {
 		// 解码图像
 		img, _, decodeErr := image.Decode(bytes.NewReader(fileData))
 		if decodeErr != nil {
-			c.String(http.StatusInternalServerError, "解码图像失败: "+decodeErr.Error())
-			return
+			return "", decodeErr
 		}
 
 		// 转换为WebP
 		webpData, convertErr := utils.ConvertToWebP(img, config.Cfg.Image.WebPQuality)
 		if convertErr != nil {
-			c.String(http.StatusInternalServerError, "转换WebP失败: "+convertErr.Error())
-			return
+			return "", convertErr
 		}
 
 		finalFileName = utils.GenerateRandomFilename(".webp")
@@ -162,21 +125,65 @@ func UploadImage(c *gin.Context) {
 	imgDir := "." + config.Cfg.Image.Uri
 	imgDir = filepath.Join(imgDir, year, month, day)
 	if err := os.MkdirAll(imgDir, 0755); err != nil {
-		c.String(http.StatusInternalServerError, "创建目标目录失败: "+err.Error())
-		return
+		return "", err
 	}
 
 	finalFilePath := filepath.Join(imgDir, finalFileName)
 
 	// 直接将内存中的数据写入最终目标文件
 	if err := os.WriteFile(finalFilePath, finalFileData, 0644); err != nil {
-		c.String(http.StatusInternalServerError, "保存文件失败: "+err.Error())
+		return "", err
+	}
+
+	// 生成返回URL
+	url := config.Cfg.Server.Domain + config.Cfg.Image.Uri + "/" + year + "/" + month + "/" + day + "/" + finalFileName
+	return url, nil
+}
+
+// UploadImage 上传图片
+//
+//	@Tags			图片
+//	@Summary		上传图片
+//	@Description	上传图片
+//	@Accept			multipart/form-data
+//	@Produce		multipart/form-data
+//	@Param			file	formData	file	true	"图片文件"
+//	@Success		200		{object}	UploadResp
+//	@Security		ApiKeyAuth
+//	@router			/api/image/upload [PUT]
+func UploadImage(c *gin.Context) {
+	req := new(UploadReq)
+	if err := c.ShouldBind(req); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	resp := new(UploadResp)
+
+	// 验证文件类型
+	fileHeader, err := req.File.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, "打开文件失败: "+err.Error())
+		return
+	}
+	defer fileHeader.Close()
+
+	// 读取文件内容
+	fileData, err := io.ReadAll(fileHeader)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "读取文件失败: "+err.Error())
+		return
+	}
+
+	// 处理图片
+	url, err := ProcessImage(fileData, req.File.Filename)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	resp.Code = response.Code_Success
 	resp.Msg = "上传图片成功"
-	resp.Url = config.Cfg.Server.Domain + config.Cfg.Image.Uri + "/" + year + "/" + month + "/" + day + "/" + finalFileName
+	resp.Url = url
 
 	c.JSON(http.StatusOK, resp)
 }

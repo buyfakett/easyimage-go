@@ -15,14 +15,15 @@ type DeleteReq struct {
 }
 
 // DeleteFile 删除文件
-// @Tags 图片
-// @Summary 删除文件
-// @Description 删除相对图片目录下的文件
-// @Accept application/json
-// @Produce application/json
-// @Param path query string true "文件路径"
-// @Success 200 {object} response.CommonResp
-// @Router /api/image/delete [delete]
+//
+//	@Tags			图片
+//	@Summary		删除文件
+//	@Description	删除相对图片目录下的文件
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			path	query		string	true	"文件路径"
+//	@Success		200		{object}	response.CommonResp
+//	@Router			/api/image/delete [delete]
 func DeleteFile(c *gin.Context) {
 	var req DeleteReq
 	if err := c.ShouldBindQuery(&req); err != nil {

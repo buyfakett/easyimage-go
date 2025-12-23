@@ -15,14 +15,15 @@ type TestTokenReq struct {
 }
 
 // TestToken 测试token权限
-// @Tags 测试
-// @Summary 测试token权限
-// @Description 测试token权限
-// @Accept application/json
-// @Produce application/json
-// @Param req body TestTokenReq true "测试token权限"
-// @Success 200 {object} response.CommonResp
-// @Router /api/user/test_token [post]
+//
+//	@Tags			测试
+//	@Summary		测试token权限
+//	@Description	测试token权限
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			req	body		TestTokenReq	true	"测试token权限"
+//	@Success		200	{object}	response.CommonResp
+//	@Router			/api/user/test_token [post]
 func TestToken(c *gin.Context) {
 	req := new(TestTokenReq)
 	if err := c.ShouldBind(req); err != nil {

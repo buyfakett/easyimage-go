@@ -4,13 +4,18 @@ WORKDIR=$(pwd)
 
 SERVER_NAME=easyimage-go
 
-VERSION=$1
+VERSION=${1:-dev}
+
+go_args=""
+if [ "${VERSION}"x != "dev"x ]; then
+    go_args="-trimpath"
+fi
 
 # 创建静态文件目录及默认页面
-# mkdir -p static/
-# if [ ! -f static/index.html ]; then
-#     echo "<h1>hertz service</h1>" > static/index.html
-# fi
+if [ ! -d static/ ]; then
+    mkdir -p static/
+    touch static/index.html
+fi
 
 # 检查依赖工具
 if ! command -v xz &> /dev/null; then
@@ -34,8 +39,13 @@ go mod download
 platforms=(
     "linux/amd64"
     "linux/arm64"
+    "linux/386"
+    "linux/arm"
+    "linux/riscv64"
     "darwin/amd64"
     "darwin/arm64"
+    "windows/amd64"
+    "windows/arm64"
 )
 
 # 主构建流程
@@ -61,7 +71,7 @@ for platform in "${platforms[@]}"; do
     # 编译
     echo "编译中: ${GOOS}-${GOARCH}..."
     env GOOS="$GOOS" GOARCH="$GOARCH" \
-        go build -ldflags '-w -s' -o "$OUTPUT_FILE"
+        go build ${go_args} -ldflags '-w -s' -o "$OUTPUT_FILE"
 
     if [ "${VERSION}"x != "dev"x ]; then
         # 使用 upx 压缩
