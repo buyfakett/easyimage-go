@@ -146,7 +146,7 @@ func ProcessImage(fileData []byte, filename string) (string, error) {
 //	@Summary		上传图片
 //	@Description	上传图片
 //	@Accept			multipart/form-data
-//	@Produce		multipart/form-data
+//	@Produce		application/json
 //	@Param			file	formData	file	true	"图片文件"
 //	@Success		200		{object}	UploadResp
 //	@Security		ApiKeyAuth
@@ -176,6 +176,60 @@ func UploadImage(c *gin.Context) {
 
 	// 处理图片
 	url, err := ProcessImage(fileData, req.File.Filename)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp.Code = response.Code_Success
+	resp.Msg = "上传图片成功"
+	resp.Url = url
+
+	c.JSON(http.StatusOK, resp)
+}
+
+// UploadImageForm 上传图片
+//
+//	@Tags			图片
+//	@Summary		表单上传图片
+//	@Description	使用multipart/form-data格式上传图片，支持Apple自动化调用
+//	@Accept			multipart/form-data
+//	@Produce		application/json
+//	@Param			image	formData	file	true	"图片文件（支持curl -F \"image=@/path/to/file\"）"
+//	@Success		200		{object}	UploadResp
+//	@Security		ApiKeyAuth
+//	@router			/api/image/upload [POST]
+func UploadImageForm(c *gin.Context) {
+	resp := new(UploadResp)
+
+	// 先尝试获取image字段（支持curl -F "image=@/path/to/file"）
+	file, err := c.FormFile("image")
+	if err != nil {
+		// 如果没有image字段，尝试获取file字段（兼容原有的multipart/form-data）
+		file, err = c.FormFile("file")
+		if err != nil {
+			c.String(http.StatusBadRequest, "获取图片文件失败: "+err.Error())
+			return
+		}
+	}
+
+	// 打开文件
+	fileHeader, err := file.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, "打开文件失败: "+err.Error())
+		return
+	}
+	defer fileHeader.Close()
+
+	// 读取文件内容
+	fileData, err := io.ReadAll(fileHeader)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "读取文件失败: "+err.Error())
+		return
+	}
+
+	// 处理图片
+	url, err := ProcessImage(fileData, file.Filename)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return

@@ -11,6 +11,7 @@ func imageRoutes(r *gin.RouterGroup) {
 	imageGroup := r.Group("/image")
 	{
 		imageGroup.PUT("/upload", mw.TokenAuthMiddleware(), hImage.UploadImage)
+		imageGroup.POST("/upload", mw.TokenAuthMiddleware(), hImage.UploadImageForm)
 		imageGroup.GET("/list", mw.TokenAuthMiddleware(), hImage.ListFiles)
 		imageGroup.DELETE("/delete", mw.TokenAuthMiddleware(), hImage.DeleteFile)
 	}

@@ -135,6 +135,28 @@ paths:
       tags:
       - 图片
   /api/image/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 使用multipart/form-data格式上传图片，支持Apple自动化调用
+      parameters:
+      - description: 图片文件（支持curl -F \
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/image.UploadResp'
+      security:
+      - ApiKeyAuth: []
+      summary: 表单上传图片
+      tags:
+      - 图片
     put:
       consumes:
       - multipart/form-data
@@ -146,7 +168,7 @@ paths:
         required: true
         type: file
       produces:
-      - multipart/form-data
+      - application/json
       responses:
         "200":
           description: OK
