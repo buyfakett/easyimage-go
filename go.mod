@@ -7,12 +7,12 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gookit/slog v0.6.0
 	github.com/jdeng/goheif v0.0.0-20251001174315-babb64285736
-	github.com/mojocn/base64Captcha v1.3.1
+	github.com/mojocn/base64Captcha v1.3.8
 	github.com/prometheus/client_golang v1.23.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/swaggo/swag v1.16.6
-	github.com/wdcbot/qingfeng v1.5.1
+	github.com/wdcbot/qingfeng v1.5.9
 	golang.org/x/image v0.32.0
 )
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"easyimage_go/biz/response"
+	"easyimage_go/utils/captcha"
 	"easyimage_go/utils/config"
 	"net/http"
 
@@ -31,7 +32,7 @@ func TestToken(c *gin.Context) {
 		return
 	}
 	// 验证验证码
-	if !captchaStore.Verify(req.CaptchaID, req.Captcha, true) {
+	if !captcha.Store.Verify(req.CaptchaID, req.Captcha, true) {
 		c.JSON(http.StatusOK, &response.CommonResp{
 			Code: response.Code_CaptchaErr,
 			Msg:  "验证码错误或已过期",

@@ -2,25 +2,12 @@ package user
 
 import (
 	"easyimage_go/biz/response"
-	"easyimage_go/utils/config"
+	"easyimage_go/utils/captcha"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mojocn/base64Captcha"
 )
-
-// 验证码驱动
-var captchaDriver = base64Captcha.NewDriverDigit(
-	60,  // 高度
-	240, // 宽度
-	6,   // 长度
-	0.7, // 最大倾斜度
-	100, // 点数
-)
-
-// 验证码存储 - 设置5分钟过期
-var captchaStore = base64Captcha.NewMemoryStore(10240, time.Duration(config.Cfg.Server.CaptchaExpireTime)*time.Minute)
 
 // CaptchaResp 验证码响应
 type CaptchaResp struct {
@@ -45,8 +32,8 @@ type CaptchaData struct {
 //	@router			/api/user/captcha [GET]
 func GenerateCaptcha(c *gin.Context) {
 	// 创建验证码
-	captcha := base64Captcha.NewCaptcha(captchaDriver, captchaStore)
-	id, base64Image, err := captcha.Generate()
+	NewCaptcha := base64Captcha.NewCaptcha(captcha.Driver, captcha.Store)
+	id, base64Image, _, err := NewCaptcha.Generate()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &CaptchaResp{
 			Code: response.Code_Err,

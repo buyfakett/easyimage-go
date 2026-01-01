@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
       - run: git fetch --unshallow --quiet --tags --force
       - name: Checkout web
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: buyfakett/easyimage-go-web
           token: ${{ secrets.RELEASE_TOKEN }}
@@ -85,7 +85,7 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
       - run: git fetch --unshallow --quiet --tags --force
       - name: Checkout web
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: buyfakett/easyimage-go-web
           token: ${{ secrets.RELEASE_TOKEN }}

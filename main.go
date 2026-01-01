@@ -4,6 +4,7 @@ import (
 	"easyimage_go/biz/handler/image"
 	"easyimage_go/biz/mw"
 	genrouter "easyimage_go/biz/router"
+	"easyimage_go/utils/captcha"
 	"easyimage_go/utils/config"
 	"easyimage_go/utils/logger"
 	"embed"
@@ -108,6 +109,7 @@ func main() {
 		fmt.Printf("访问URL: %s\n", url)
 		return
 	}
+	captcha.Init()
 
 	// 服务模式：启动Web服务器
 	logger.InitLog(config.Cfg.Server.LogLevel)

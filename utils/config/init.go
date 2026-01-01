@@ -27,9 +27,15 @@ type ImageConfig struct {
 	WebPQuality int    `mapstructure:"webp_quality"`
 }
 
+type CaptchaConfig struct {
+	Length     int `mapstructure:"length"`
+	NoiseCount int `mapstructure:"noise_count"`
+}
+
 type AppConfig struct {
-	Server ServerConfig `mapstructure:"server"`
-	Image  ImageConfig  `mapstructure:"image"`
+	Server  ServerConfig  `mapstructure:"server"`
+	Image   ImageConfig   `mapstructure:"image"`
+	Captcha CaptchaConfig `mapstructure:"captcha"`
 }
 
 var Cfg AppConfig

@@ -9,3 +9,6 @@ server:
 image:
   uri: /i
   webp_quality: 100
+captcha:
+  length: 6
+  noise_count: 50
