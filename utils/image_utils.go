@@ -2,6 +2,7 @@ package utils
 
 import (
 	"image"
+	_ "image/png"
 
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"

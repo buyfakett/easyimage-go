@@ -94,7 +94,18 @@ func ProcessImage(fileData []byte, filename string) (string, error) {
 	var finalFileName string
 	var finalFileData []byte
 
-	if ext != ".webp" {
+	if ext == ".webp" {
+		finalFileName = utils.GenerateRandomFilename(ext)
+		finalFileData = fileData
+	} else if ext == ".png" {
+		if _, _, decodeErr := image.DecodeConfig(bytes.NewReader(fileData)); decodeErr != nil {
+			return "", decodeErr
+		}
+
+		// PNG is stored in its original format to preserve transparency without WebP support.
+		finalFileName = utils.GenerateRandomFilename(ext)
+		finalFileData = fileData
+	} else {
 		// 解码图像
 		img, _, decodeErr := image.Decode(bytes.NewReader(fileData))
 		if decodeErr != nil {
@@ -109,10 +120,6 @@ func ProcessImage(fileData []byte, filename string) (string, error) {
 
 		finalFileName = utils.GenerateRandomFilename(".webp")
 		finalFileData = webpData
-	} else {
-		// 不转换，使用原始文件
-		finalFileName = utils.GenerateRandomFilename(ext)
-		finalFileData = fileData
 	}
 
 	// 创建 i/年/月/日 目录结构
