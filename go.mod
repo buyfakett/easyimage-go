@@ -1,6 +1,6 @@
 module easyimage_go
 
-go 1.26.1
+go 1.27.1
 
 require (
 	github.com/buyfakett/qingfeng v1.7.0
