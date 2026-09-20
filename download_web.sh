@@ -2,7 +2,7 @@
 set -e
 
 # Default values
-WEB_REPO=confkeeper/confkeeper-web
+WEB_REPO=buyfakett/easyimage-go-web
 WEB_VERSION="v0.3.0"
 
 if [ -z "$RELEASE_TOKEN" ]; then
