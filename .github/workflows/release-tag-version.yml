@@ -7,6 +7,11 @@ on:
       - "!v*-rc*"
       - "!v*-dev"
 
+env:
+  IMAGE_NAME: buyfakett/easyimage_go
+  # 设置为 true 时：增加 dev- 前缀，取消 latest 标签
+  IS_DEV_RELEASE: false
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -15,114 +20,90 @@ jobs:
   binary:
     runs-on: ubuntu-latest
     permissions:
-      packages: write # to publish to ghcr.io
+      packages: write
     steps:
       - uses: actions/checkout@v7
         with:
           repository: ${{ github.repository }}
           token: ${{ secrets.RELEASE_TOKEN }}
       - run: git fetch --unshallow --quiet --tags --force
-      - name: Checkout web
-        uses: actions/checkout@v7
-        with:
-          repository: buyfakett/easyimage-go-web
-          token: ${{ secrets.RELEASE_TOKEN }}
-          path: web
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-      - name: build web
-        run: |
-          cd web/
-          npm install -g pnpm
-          pnpm install
-          pnpm run build
-          cd ..
-          mkdir static/
-          cp -r web/dist/* static/
-          rm -rf web/
+
+      - name: Download and extract web dist
+        run: bash download_web.sh
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true
+
       - name: Install UPX
         uses: crazy-max/ghaction-upx@v4
         with:
           install-only: true
+
       - run: /bin/bash -x build.sh ${{ github.ref_name }}
+
       - name: Install GH CLI
         uses: dev-hanz-ops/install-gh-cli-action@v0.3.0
         with:
-          gh-cli-version: 2.71.2
+          gh-cli-version: 2.98.0
+
       - name: create github release
         run: |
-          # 1. 创建或跳过Release创建
           if ! gh release view ${{ github.ref_name }} &>/dev/null; then
             gh release create ${{ github.ref_name }} \
             --title "${{ github.ref_name }}" \
             --notes-from-tag
           fi
-      
-          # 2. 智能清理旧文件
           for file in dist/release/*; do
             filename=$(basename "$file")
             gh release delete-asset ${{ github.ref_name }} "$filename" --yes 2>/dev/null || true
           done
-      
-          # 3. 上传新文件
           gh release upload ${{ github.ref_name }} dist/release/* --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
   docker-rootful:
     runs-on: ubuntu-latest
     permissions:
-      packages: write # to publish to ghcr.io
+      packages: write
     steps:
       - uses: actions/checkout@v7
         with:
           repository: ${{ github.repository }}
           token: ${{ secrets.RELEASE_TOKEN }}
       - run: git fetch --unshallow --quiet --tags --force
-      - name: Checkout web
-        uses: actions/checkout@v7
-        with:
-          repository: buyfakett/easyimage-go-web
-          token: ${{ secrets.RELEASE_TOKEN }}
-          path: web
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-      - name: build web
-        run: |
-          cd web/
-          npm install -g pnpm
-          pnpm install
-          pnpm run build
-          cd ..
-          mkdir static/
-          cp -r web/dist/* static/
-          rm -rf web/
+
+      - name: Download and extract web dist
+        run: bash download_web.sh
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
-      - uses: docker/metadata-action@v6
+
+      - name: Docker Metadata
+        uses: docker/metadata-action@v6
         id: meta
         with:
-          images: |-
-            buyfakett/easyimage_go
-          # this will generate tags in the following format:
-          # latest
-          # 1.2
-          # 1.2.3
+          images: ${{ env.IMAGE_NAME }}
+          # 根据 IS_DEV_RELEASE 动态生成标签规则
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+          # 3. 处理前缀和 latest 逻辑
+          flavor: |
+            latest=${{ env.IS_DEV_RELEASE == 'true' && 'false' || 'auto' }}
+            prefix=${{ env.IS_DEV_RELEASE == 'true' && 'dev-' || '' }}
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: build rootful docker image
         uses: docker/build-push-action@v7
         with:
