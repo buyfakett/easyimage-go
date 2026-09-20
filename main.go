@@ -15,9 +15,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/buyfakett/qingfeng"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/slog"
-	"github.com/wdcbot/qingfeng"
 )
 
 //go:embed config/default.yaml
